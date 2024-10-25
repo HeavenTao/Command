@@ -1,20 +1,15 @@
+#include <grp.h>
 #include <stdio.h>
-
-typedef struct LineInfo {
-  long size;
-  char power[9];
-  unsigned char type;
-  char *name;
-} LineInfo;
-
-typedef struct LineInfo2 {
-  long long size;
-  unsigned char type;
-  char *name;
-  char power[10];
-} LineInfo2;
+#include <sys/stat.h>
 
 int main() {
-  printf("%lu %lu",sizeof(LineInfo),sizeof(LineInfo2));
-  return 0;
+  char *path = "/home/ht/code/Command/..";
+  struct stat file;
+
+  stat(path, &file);
+
+  for (int i = 0; i < 10; i++) {
+    struct group *grp = getgrgid(1000);
+    printf("%s\n", grp->gr_name);
+  }
 }

@@ -1,4 +1,6 @@
 #include <dirent.h>
+#include <grp.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +11,8 @@ typedef struct LineInfo {
   unsigned char type;
   char power[10];
   char *name;
+  char *userName;
+  char *groupName;
 } LineInfo;
 
 typedef struct Node {
@@ -38,59 +42,60 @@ void getFileType(char *fullPath, LineInfo *lineInfo) {
     lineInfo->power[0] = '-';
   }
 
-  if(file.st_mode&S_IWUSR){
-    lineInfo->power[1]='w';
-  }else{
-    lineInfo->power[1]='-';
+  if (file.st_mode & S_IWUSR) {
+    lineInfo->power[1] = 'w';
+  } else {
+    lineInfo->power[1] = '-';
   }
 
-  if(file.st_mode&S_IXUSR){
-    lineInfo->power[2]='x';
-  }else{
-    lineInfo->power[2]='-';
+  if (file.st_mode & S_IXUSR) {
+    lineInfo->power[2] = 'x';
+  } else {
+    lineInfo->power[2] = '-';
   }
 
-  if(file.st_mode&S_IRGRP){
-    lineInfo->power[3]='r';
-  }else{
-    lineInfo->power[3]='-';
-  }
-  
-  if(file.st_mode&S_IWGRP){
-    lineInfo->power[4]='w';
-  }else{
-    lineInfo->power[4]='-';
+  if (file.st_mode & S_IRGRP) {
+    lineInfo->power[3] = 'r';
+  } else {
+    lineInfo->power[3] = '-';
   }
 
-  if(file.st_mode&S_IXGRP){
-    lineInfo->power[5]='x';
-  }else{
-    lineInfo->power[5]='-';
+  if (file.st_mode & S_IWGRP) {
+    lineInfo->power[4] = 'w';
+  } else {
+    lineInfo->power[4] = '-';
   }
 
-  if(file.st_mode&S_IROTH){
-    lineInfo->power[6]='r';
-  }else{
-    lineInfo->power[6]='-';
+  if (file.st_mode & S_IXGRP) {
+    lineInfo->power[5] = 'x';
+  } else {
+    lineInfo->power[5] = '-';
   }
 
-  if(file.st_mode&S_IWOTH){
-    lineInfo->power[7]='w';
-  }else{
-    lineInfo->power[7]='-';
+  if (file.st_mode & S_IROTH) {
+    lineInfo->power[6] = 'r';
+  } else {
+    lineInfo->power[6] = '-';
   }
 
-  if(file.st_mode&S_IXOTH){
-    lineInfo->power[8]='x';
-  }else{
-    lineInfo->power[8]='-';
+  if (file.st_mode & S_IWOTH) {
+    lineInfo->power[7] = 'w';
+  } else {
+    lineInfo->power[7] = '-';
   }
 
-  lineInfo->power[9]='\0';
+  if (file.st_mode & S_IXOTH) {
+    lineInfo->power[8] = 'x';
+  } else {
+    lineInfo->power[8] = '-';
+  }
 
-  lineInfo->size=file.st_size;
+  lineInfo->power[9] = '\0';
+
+  if (lineInfo->type == 1) {
+    struct group *grp = getgrgid(1000);
+  }
 }
-
 
 void sortDirList(Node *head) {
   Node *cur = NULL;
@@ -116,7 +121,7 @@ void sortDirList(Node *head) {
 }
 
 Node *getDirList() {
-  char *path = "/home/ht/temp/learnc/";
+  char *path = "/home/ht/code/Command/";
   DIR *dir = opendir(path);
 
   struct dirent *entry;
@@ -135,23 +140,27 @@ Node *getDirList() {
     if (head == NULL) {
       head = (Node *)malloc(sizeof(Node *));
       data = (LineInfo *)malloc(sizeof(LineInfo *));
+      data->userName = NULL;
+      data->groupName = NULL;
       head->next = NULL;
       head->prev = NULL;
       head->lineInfo = data;
-      data->size=0;
+      data->size = 0;
       data->name = strdup(entry->d_name);
-      getFileType(fullPath,data);
+      getFileType(fullPath, data);
 
       cur = head;
     } else {
       Node *temp = (Node *)malloc(sizeof(Node *));
       data = (LineInfo *)malloc(sizeof(LineInfo *));
+      data->userName = NULL;
+      data->groupName = NULL;
       temp->next = NULL;
       temp->prev = NULL;
       temp->lineInfo = data;
-      data->size=0;
+      data->size = 0;
       data->name = strdup(entry->d_name);
-      getFileType(fullPath,data);
+      getFileType(fullPath, data);
 
       cur->next = temp;
       temp->prev = cur;
@@ -177,6 +186,8 @@ int getMaxLength(Node *head) {
   return max;
 }
 
+void printHead() { printf("Head\n"); }
+
 int main() {
 
   Node *head = getDirList();
@@ -184,11 +195,18 @@ int main() {
 
   sortDirList(head);
 
-  int maxLen = getMaxLength(head);
+  /*int maxLen = getMaxLength(head);*/
+
+  printHead();
 
   while (cur != NULL) {
-    char *type=cur->lineInfo->type==1?"\x1b[33m.":"\x1b[31md";
-    printf("%s%s %s\n",type,cur->lineInfo->power,cur->lineInfo->name);
+    char *type =
+        cur->lineInfo->type == 1 ? "\x1b[33m.\x1b[0m" : "\x1b[31md\x1b[0m";
+    /*printf("%s%s %s %s %s\n", type, cur->lineInfo->power,
+     * cur->lineInfo->name,*/
+    /*       cur->lineInfo->userName, cur->lineInfo->groupName);*/
+
+    printf("%s%s %s\n", type, cur->lineInfo->power, cur->lineInfo->name);
     cur = cur->next;
   }
 
