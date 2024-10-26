@@ -92,9 +92,11 @@ void getFileType(char *fullPath, LineInfo *lineInfo) {
 
   lineInfo->power[9] = '\0';
 
-  if (lineInfo->type == 1) {
-    struct group *grp = getgrgid(1000);
-  }
+  struct group *grp = getgrgid(file.st_gid);
+  struct passwd *user = getpwuid(file.st_uid);
+
+  lineInfo->userName = user->pw_name;
+  lineInfo->groupName = grp->gr_name;
 }
 
 void sortDirList(Node *head) {
@@ -138,8 +140,8 @@ Node *getDirList() {
     strcat(fullPath, entry->d_name);
 
     if (head == NULL) {
-      head = (Node *)malloc(sizeof(Node *));
-      data = (LineInfo *)malloc(sizeof(LineInfo *));
+      head = (Node *)malloc(sizeof(Node));
+      data = (LineInfo *)malloc(sizeof(LineInfo));
       data->userName = NULL;
       data->groupName = NULL;
       head->next = NULL;
@@ -151,8 +153,8 @@ Node *getDirList() {
 
       cur = head;
     } else {
-      Node *temp = (Node *)malloc(sizeof(Node *));
-      data = (LineInfo *)malloc(sizeof(LineInfo *));
+      Node *temp = (Node *)malloc(sizeof(Node));
+      data = (LineInfo *)malloc(sizeof(LineInfo));
       data->userName = NULL;
       data->groupName = NULL;
       temp->next = NULL;
@@ -202,11 +204,10 @@ int main() {
   while (cur != NULL) {
     char *type =
         cur->lineInfo->type == 1 ? "\x1b[33m.\x1b[0m" : "\x1b[31md\x1b[0m";
-    /*printf("%s%s %s %s %s\n", type, cur->lineInfo->power,
-     * cur->lineInfo->name,*/
-    /*       cur->lineInfo->userName, cur->lineInfo->groupName);*/
+    printf("%s%s %s %s %s\n", type, cur->lineInfo->power, cur->lineInfo->name,
+           cur->lineInfo->userName, cur->lineInfo->groupName);
 
-    printf("%s%s %s\n", type, cur->lineInfo->power, cur->lineInfo->name);
+    /*printf("%s%s %s\n", type, cur->lineInfo->power, cur->lineInfo->name);*/
     cur = cur->next;
   }
 
