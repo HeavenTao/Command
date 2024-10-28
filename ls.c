@@ -197,15 +197,15 @@ int main() {
 
   sortDirList(head);
 
-  /*int maxLen = getMaxLength(head);*/
+  int maxLen = getMaxLength(head);
 
   printHead();
 
   while (cur != NULL) {
     char *type =
         cur->lineInfo->type == 1 ? "\x1b[33m.\x1b[0m" : "\x1b[31md\x1b[0m";
-    printf("%s%s %s %s %s\n", type, cur->lineInfo->power, cur->lineInfo->name,
-           cur->lineInfo->userName, cur->lineInfo->groupName);
+    printf("%s%s %-5s %-5s %*s %lld\n", type, cur->lineInfo->power, cur->lineInfo->userName,
+           cur->lineInfo->groupName,maxLen*-1, cur->lineInfo->name,cur->lineInfo->size);
 
     /*printf("%s%s %s\n", type, cur->lineInfo->power, cur->lineInfo->name);*/
     cur = cur->next;
