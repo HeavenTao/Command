@@ -5,11 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
 typedef struct LineInfo {
   long long size;
   unsigned char type;
   char power[10];
+  char *time;
   char *name;
   char *userName;
   char *groupName;
@@ -91,6 +93,15 @@ void getFileType(char *fullPath, LineInfo *lineInfo) {
   }
 
   lineInfo->power[9] = '\0';
+
+  if (lineInfo->type == 1) {
+    lineInfo->size = file.st_size;
+  }
+
+  struct tm *time = localtime(&file.st_mtime);
+  char *t = malloc(sizeof(char) * 20);
+  strftime(t, sizeof(t) * 20, "%Y-%m-%d %H:%M:%S", time);
+  lineInfo->time = t;
 
   struct group *grp = getgrgid(file.st_gid);
   struct passwd *user = getpwuid(file.st_uid);
@@ -188,7 +199,12 @@ int getMaxLength(Node *head) {
   return max;
 }
 
-void printHead() { printf("Head\n"); }
+void printHead() {
+  printf("\x1b[33;4m%-10s\x1b[0m \x1b[33;4m%-5s\x1b[0m \x1b[33;4m%-5s\x1b[0m "
+         "\x1b[33;4m%-5s\x1b[0m "
+         "%-20s%s\n",
+         "Permissions", "User", "Group", "Time", "Size", "Name");
+}
 
 int main() {
 
@@ -204,8 +220,10 @@ int main() {
   while (cur != NULL) {
     char *type =
         cur->lineInfo->type == 1 ? "\x1b[33m.\x1b[0m" : "\x1b[31md\x1b[0m";
-    printf("%s%s %-5s %-5s %*s %lld\n", type, cur->lineInfo->power, cur->lineInfo->userName,
-           cur->lineInfo->groupName,maxLen*-1, cur->lineInfo->name,cur->lineInfo->size);
+    printf("%s%-10s %-5s %-5s %-5lld %*s %s\n", type, cur->lineInfo->power,
+           cur->lineInfo->userName, cur->lineInfo->groupName,
+           cur->lineInfo->size, maxLen * -1, cur->lineInfo->time,
+           cur->lineInfo->name);
 
     /*printf("%s%s %s\n", type, cur->lineInfo->power, cur->lineInfo->name);*/
     cur = cur->next;
