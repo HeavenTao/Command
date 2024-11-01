@@ -1,15 +1,17 @@
-#include <grp.h>
 #include <stdio.h>
-#include <sys/stat.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 int main() {
-  char *path = "/home/ht/code/Command/..";
-  struct stat file;
+  char *s = strdup("hello\nword");
+  char *d = "\n\r";
+  char *result = NULL;
 
-  stat(path, &file);
-
-  for (int i = 0; i < 10; i++) {
-    struct group *grp = getgrgid(1000);
-    printf("%s\n", grp->gr_name);
+  result = strtok(s, d);
+  printf("%s", result);
+  while (result != NULL) {
+    result = strtok(NULL, d);
+    printf("%s", result);
   }
 }
