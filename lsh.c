@@ -34,6 +34,8 @@ char **lsh_split_line(char *line) {
     token = strtok(NULL, LSH_TOK_DELIM);
   }
 
+  tokens[position] = NULL;
+
   return tokens;
 }
 
