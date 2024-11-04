@@ -1,17 +1,14 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 int main() {
-  char *s = strdup("hello\nword");
-  char *d = "\n\r";
-  char *result = NULL;
-
-  result = strtok(s, d);
-  printf("%s", result);
-  while (result != NULL) {
-    result = strtok(NULL, d);
-    printf("%s", result);
+  printf("Parent pid is %d\n", getpid());
+  int pid= fork();
+  if(pid==0){
+    printf("child Process child id is %d\n",getpid());
+  }else if(pid>0){
+    printf("parent process pid is %d\n",getpid());
+  }else{
+    perror("Error");
   }
 }
